@@ -9,5 +9,5 @@ EricFitter - Takes optical spectrum data (wavelength, transmission/reflection) g
 More info about S4 can be found here:
 https://web.stanford.edu/group/fan/S4/
 
-I compiled my S4 Python Module from source after following the instructions from:
+I compiled my S4 Python Module after downloading the modified source and following the instructions from:
 https://github.com/phoebe-p/S4
