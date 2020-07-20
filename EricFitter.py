@@ -43,17 +43,72 @@ def Derivative(xdata,ydata):
 # usage: 
 #   xmin,xmax = FindProperRange(xdata, ydata) 
 #spits back the index ranges where we see at least 2 inflection points... 
-def FindProperRange(xdata, ydata):
-    d2ydx2 = Derivative(xdata, Derivative(xdata, ydata))
+def FindProperRange(xdata, ydata, debug = 0):
+    dydx = Derivative(xdata, ydata)
+    d2ydx2 = Derivative(xdata, dydx)
     
-    WhereChangeSign = np.argwhere( (d2ydx2[0:(-1)]*d2ydx2[1:] < 0)  )
-    WhereChangeSign2= np.argwhere(  d2ydx2[0:(-2)]*d2ydx2[2:] < 0   )
+    #find where dydx = 0... 
     
-    indexmin = np.min(WhereChangeSign)
+    N = len(xdata) # number of data points
+    
+    # find the indices for which we have a 
+    DerivPos2Neg = 1 + np.argwhere(  (dydx[0:(-2)] >0.) &  (dydx[2:] < 0.) )
+    DerivNeg2Pos = 1 + np.argwhere(  (dydx[0:(-2)] <0.) &  (dydx[2:] > 0.) )
+        
+    DerivPos2Neg = np.squeeze(DerivPos2Neg)
+    DerivNeg2Pos = np.squeeze(DerivNeg2Pos)
+         
+    
+    indexmin = []
+    indexmax = []
+    if debug == 1:
+        print('Which indices are candidate  max optima: ',DerivPos2Neg)
+        print('Which indices are candidate  min optima: ',DerivNeg2Pos)
+    for index in DerivPos2Neg:
+        #look to the left
+        #                 where does it go from concave up to    concave down
+        leftindex = 1+np.argwhere(  (d2ydx2[0:(index-2)]>0.) &  (d2ydx2[2:(index)]<0.) )    
+        leftindex = np.squeeze(leftindex)
+        #look to the right:
+        #                 where does it go from concave down to   concave up
+        riteindex = 1+index+1+np.argwhere(  (d2ydx2[(index+1):(-2)]<0.) &  (d2ydx2[(index+3):]>0.) )
+        riteindex = np.squeeze(riteindex)
+        if debug:
+            print(index, leftindex, riteindex)
+        try:
+            leftwidth = (index-np.max(leftindex))
+            ritewidth = (np.min(riteindex) - index)
+            maxwidth =  max(leftwidth,ritewidth)
+            indexmin.append(np.max(leftindex)-3*maxwidth)
+            indexmax.append(np.min(riteindex)+3*maxwidth)
+        except:
+            # do nothing
+            print('')
+            
+    for index in DerivNeg2Pos:
+        #look to the left
+        #                 where does it go from concave down to    concave up
+        leftindex = 1+np.argwhere(  (d2ydx2[0:(index-2)]<0.) &  (d2ydx2[2:(index)]>0.) )    
+        leftindex = np.squeeze(leftindex)
+        #look to the right:
+        #                 where does it go from concave down to   concave up
+        riteindex = 1+index+1+np.argwhere(  (d2ydx2[(index+1):(-2)]>0.) &  (d2ydx2[(index+3):]<0.) )
+        riteindex = np.squeeze(riteindex)
+        if debug:
+            print(index, leftindex, riteindex)
+        try:
+            leftwidth = (index-np.max(leftindex))
+            ritewidth = (np.min(riteindex) - index)
+            maxwidth =  max(leftwidth,ritewidth)
+            indexmin.append(np.max(leftindex)-3*maxwidth)
+            indexmax.append(np.min(riteindex)+3*maxwidth)
+        except:
+            # do nothing
+            print('')         
+    indmin = np.min(indexmin) if (np.min(indexmin)>0) else 0
+    indmax = np.max(indexmax) if (np.max(indexmax)<N) else (N-1)
+    return indmin , indmax
 
-    indexmax = np.max(WhereChangeSign)
-    
-    return indexmin-(indexmax-indexmin), indexmax + (indexmax-indexmin)
 
 
 
