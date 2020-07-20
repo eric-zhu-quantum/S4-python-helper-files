@@ -113,7 +113,9 @@ def FindProperRange(xdata, ydata, debug = 0):
 
 
 
-
+# normalize the ydata and xdata, so that everything is between 0 and +/-1
+# normalizes them by the mean and max value
+#   probably better to normalize by the mean and the standard deviation 
 def Normalize(xdata, ydata):
     # best to normalize all the data, for faster convergence
     xdata_mean = np.mean(xdata)
@@ -128,7 +130,10 @@ def Normalize(xdata, ydata):
     return xdata_norm, ydata_norm, xdata_mean, xdata_max, ydata_mean, ydata_max
 
 
-
+#Fano fit!
+# x0guess - you must provide a guess for where the 'center' of the Fano resonance is
+# the function also gives out verbose output if you set debug = True
+# usage:  lambda0, Linewidth, q, xth, yth, Amplitude = FitFano(xdata, ydata, x0guess, debug = False)
 def FitFano(xdata, ydata, x0guess, debug = False):
     #
     #Model definition and Cost function definition
@@ -137,13 +142,10 @@ def FitFano(xdata, ydata, x0guess, debug = False):
     ModelFunc = lambda x, params: Fano(x, params[0], params[1],params[2],params[3], params[4], params[5])
     #params = [A,   x0,     Gamma,      DC,     DC1,    q]
           
-
     FirstElem = lambda Array: Array[0]
-    #
-    #
+
     xdata_norm, ydata_norm, xdata_mean, xdata_max, ydata_mean, ydata_max = Normalize(xdata, ydata)
     x0guess_norm = (x0guess - xdata_mean)/xdata_max
-
 
     CostFunc = lambda params: sum((ydata_norm - ModelFunc(xdata_norm, params))** 2) 
 
@@ -184,7 +186,10 @@ def FitFano(xdata, ydata, x0guess, debug = False):
 
 
 
-#
+#Lorentzian fit!
+# x0guess - you must provide a guess for where the 'center' of the Fano resonance is
+# the function also gives out verbose output if you set debug = True
+# usage:  lambda0, Linewidth, q, xth, yth, Amplitude = FitFano(xdata, ydata, x0guess, debug = False)
 def FitLorentzian( xdata, ydata, x0guess, debug = False):
     #
     #Model definition and Cost function definition
